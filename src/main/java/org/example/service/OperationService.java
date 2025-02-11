@@ -116,13 +116,22 @@ public class OperationService {
         try {
             channelSftp.ls(remoteFile);
         } catch (SftpException e) {
-           print("Ошибка: файл не найден на сервере. Причина: " + e.getMessage());
+            print("Ошибка: файл не найден на сервере. Причина: " + e.getMessage());
         }
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         channelSftp.get(remoteFile, outputStream);
         String originalContent = outputStream.toString(StandardCharsets.UTF_8.name());
+        if (originalContent == null || originalContent.trim().isEmpty()) {
+            originalContent = "{}";
+        }
+
         JsonObject jsonObject = new Gson().fromJson(originalContent, JsonObject.class);
-        JsonArray addressesArray = jsonObject.getAsJsonArray("addresses");
+
+        JsonArray addressesArray = jsonObject.has("addresses")
+                && !jsonObject.get("addresses").isJsonNull()
+                ? jsonObject.getAsJsonArray("addresses")
+                : new JsonArray();
+
         Map<String, String> domainIpMap = new HashMap<>();
         for (int i = 0; i < addressesArray.size(); i++) {
             JsonObject addressObject = addressesArray.get(i).getAsJsonObject();
@@ -157,7 +166,7 @@ public class OperationService {
         }
     }
 
-    public  boolean isValidIPv4(String ip) {
+    public boolean isValidIPv4(String ip) {
         return IPV4_PATTERN.matcher(ip).matches();
     }
 
