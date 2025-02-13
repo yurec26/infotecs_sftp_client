@@ -27,13 +27,12 @@ public class OperationService {
             fileContentMap.entrySet().stream()
                     .map(s -> s.getKey() + " : " + s.getValue())
                     .sorted().forEach(MessagesConstants::print);
-
         } catch (SftpException | UnsupportedEncodingException e) {
             print("Ошибка при попытке чтения файла: " + e.getMessage());
         }
     }
 
-    public void getIpByName(ChannelSftp channelSftp, Scanner scanner, String filePath) {
+    public String getIpByName(ChannelSftp channelSftp, Scanner scanner, String filePath) {
         try {
             Map<String, String> fileContentMap = readMapOfIpAddresses(channelSftp, filePath);
             print("Введите доменное имя: ");
@@ -45,14 +44,16 @@ public class OperationService {
                     .filter(s -> s.getKey().equals(input))
                     .findFirst().orElseThrow(NoSuchElementException::new).getValue();
             print(result);
+            return result;
         } catch (SftpException | UnsupportedEncodingException e) {
             print("Ошибка при попытке чтения : " + e.getMessage());
         } catch (NoSuchElementException e) {
             print("По вашему запросу ничего не найдено.");
         }
+        return "";
     }
 
-    public void getNameByIp(ChannelSftp channelSftp, Scanner scanner, String filePath) {
+    public String getNameByIp(ChannelSftp channelSftp, Scanner scanner, String filePath) {
         try {
             Map<String, String> fileContentMap = readMapOfIpAddresses(channelSftp, filePath);
             print("Введите адрес : ");
@@ -64,17 +65,18 @@ public class OperationService {
                     .filter(s -> s.getValue().equals(input))
                     .findFirst().orElseThrow(NoSuchElementException::new).getKey();
             print(result);
+            return result;
         } catch (SftpException | UnsupportedEncodingException e) {
             print("Ошибка при попытке чтения JSON-файла: " + e.getMessage());
         } catch (NoSuchElementException e) {
             print("По вашему запросу ничего не найдено.");
         }
+        return "";
     }
 
     public void addDomain(ChannelSftp channelSftp, Scanner scanner, String filePath) {
         try {
             Map<String, String> fileContentMap = readMapOfIpAddresses(channelSftp, filePath);
-
             print("Введите пару доменное имя - адрес через пробел: ");
             String[] input = scanner.nextLine().split(" ");
 
